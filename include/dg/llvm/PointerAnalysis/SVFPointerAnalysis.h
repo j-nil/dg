@@ -6,7 +6,7 @@
 #include <llvm/Support/raw_ostream.h>
 
 #include <SVF-FE/LLVMModule.h> // LLVMModuleSet
-#include <SVF-FE/PAGBuilder.h> // PAGBuilder
+#include <SVF-FE/SVFIRBuilder.h> // SVFIRBuilder
 #include <WPA/Andersen.h>      // Andersen analysis from SVF
 
 #include "dg/PointerAnalysis/Pointer.h"
@@ -32,19 +32,19 @@ class SvfLLVMPointsToSet : public LLVMPointsToSetImplTemplate<const PointsTo> {
     size_t _position{0};
 
     llvm::Value *_getValue(unsigned id) const {
-        auto *pagnode = _pag->getPAGNode(id);
+        auto *pagnode = _pag->getGNode(id);
         if (pagnode->hasValue())
             return const_cast<llvm::Value *>(pagnode->getValue());
 
         // for debugging right now
         llvm::errs() << "[SVF] No value in PAG NODE\n";
-        llvm::errs() << *pagnode << "\n";
+        llvm::errs() << pagnode->toString() << "\n";
         return nullptr;
     }
 
     void _findNextReal() override {
         while (it != PTSet.end()) {
-            if (_pag->getPAGNode(*it)->hasValue())
+            if (_pag->getGNode(*it)->hasValue())
                 break;
 
             // else
@@ -160,7 +160,7 @@ class SVFPointerAnalysis : public LLVMPointerAnalysis {
 
         _svfModule->buildSymbolTableInfo();
 
-        PAGBuilder builder;
+        SVFIRBuilder builder;
         PAG *pag = builder.build(_svfModule);
 
         _pta.reset(new Andersen(pag));

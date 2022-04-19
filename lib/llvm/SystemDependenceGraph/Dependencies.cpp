@@ -24,7 +24,8 @@ struct SDGDependenciesBuilder {
             if (llvm::isa<llvm::ConstantExpr>(val)) {
                 val = val->stripPointerCasts();
             } else if (llvm::isa<llvm::BasicBlock>(val) ||
-                       llvm::isa<llvm::ConstantInt>(val)) {
+                       llvm::isa<llvm::ConstantInt>(val) ||
+                       llvm::isa<llvm::ConstantFP>(val)) {
                 // we do not add use edges to basic blocks
                 // FIXME: but maybe we could? The implementation could be then
                 // clearer...
